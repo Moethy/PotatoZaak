@@ -1,0 +1,84 @@
+﻿@model PotatoZaak.Models.OrderProductViewModel
+
+<h1>Index</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Prijs</th>
+            <th>Product</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var Product in Model.Products)
+        {
+            var ProductId = Product.Id;
+            var Price = Product.Price;
+
+            <tr>
+                <td>@ProductId</td>
+                <td>@Price</td>
+                <td>
+                    @Html.DisplayFor(model => Product.Name)
+                    <button type="button" class="AddButton" data-product-id="@Product.Id" data-product-name="@Product.Name" data-product-price="@Product.Price">+</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h2>Selected Products</h2>  
+<ul id="selectedProductsList"></ul>
+
+@{
+    var selectedProducts = Model.OrderProducts; // IEnumerable<OrderProduct>
+}
+
+<form asp-action="Create" method="post">
+    <input type="hidden" name="SelectedProducts" value="" /> <!-- Dit is optioneel -->
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+@section Scripts {
+    <script>
+        var selectedProducts = [];
+
+        $(".AddButton").click(function () {
+            var productId = $(this).data("product-id");
+            var productName = $(this).data("product-name");
+            var productPrice = $(this).data("product-price");
+
+            // Check of het product al in de lijst staat
+            var existingProduct = selectedProducts.find(function (product) {
+                return product.productId === productId;
+            });
+
+            if (existingProduct) {
+                existingProduct.quantity++;
+            } else {
+                selectedProducts.push({ productId: productId, productName: productName, productPrice: productPrice, quantity: 1 });
+            }
+
+            // Bijwerken van de lijst
+            updateSelectedProductsList(selectedProducts);
+
+            // Optioneel: bijwerken van het verborgen invoerveld met JSON-data
+            // Je kunt dit toevoegen als je de geselecteerde producten in JSON-formaat wilt verzenden
+            //$("#SelectedProducts").val(JSON.stringify(selectedProducts));
+        });
+
+        // Functie voor het bijwerken van de lijst van geselecteerde producten
+        function updateSelectedProductsList(products) {
+            var selectedProductsList = $("#selectedProductsList");
+            selectedProductsList.empty();
+
+            for (var product of products) {
+                selectedProductsList.append("<li>" + product.productName + " - Quantity: " + product.quantity + " - Price: " + product.productPrice + "</li>");
+            }
+        }
+
+    </script>
+
+}
